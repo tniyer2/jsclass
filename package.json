@@ -1,9 +1,10 @@
 {
-  "name": "jsclass",
+  "name": "@tniyer/jsclass",
   "version": "1.0.0",
   "description": "Class system for javascript",
-  "main": "index.js",
+  "main": "class.js",
   "scripts": {
+    "test": "node \"test/index.js\""
   },
   "repository": {
     "type": "git",
@@ -14,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/tniyer2/jsclass/issues"
   },
-  "homepage": "https://github.com/tniyer2/jsclass#readme"
+  "homepage": "https://github.com/tniyer2/jsclass#readme",
+  "directories": {
+    "test": "test"
+  }
 }

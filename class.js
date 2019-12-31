@@ -36,6 +36,7 @@ function _getAllSuperClasses(classes) {
 
 function _isValidClassName(name) {
 	return (
+		typeof name === "string" &&
 		name.length > 0 &&
 		name[0] !== "_" &&
 		name !== PARENT_SCOPE_NAME &&
@@ -91,6 +92,24 @@ function _inheritStaticPrototype(cls, staticPrototype) {
 	_assign(cls, staticPrototype, true);
 }
 
+function _extractScopesFromPrototype(prototype, keys) {
+	const scopes = [];
+	for (const k of keys) {
+		scopes.push(prototype[k]);
+		delete prototype[k];
+	}
+	return scopes;
+}
+
+function _defineScopesOnContext(self, key, prototype) {
+	const scope = Object.create(prototype, {
+		[THIS_PROPERTY_NAME]: { value: self }
+	});
+	Object.defineProperty(self, key, {
+		value: scope, configurable: true
+	});
+}
+
 function _formatCallbackReturn(value) {
 	if (!Array.isArray(value)) {
 		value = [value];
@@ -120,21 +139,30 @@ function createClass(className, superClasses, callback) {
 
 	const allSuperClasses = _getAllSuperClasses(superClasses);
 	const scopes =
-		_createProtectedScopesObject(superClasses, allSuperClasses);
+		_createProtectedScopesObject(
+			superClasses, allSuperClasses);
 
 	const prototype = _createPrototype(
 		superClasses, privateKey, protectedKey);
 
-	let staticPrototype = _createStaticPrototype(privateKey, protectedKey);
+	let staticPrototype = _createStaticPrototype(
+		privateKey, protectedKey);
 
 	const [constructor, superInitializer, createContext] =
 		_formatCallbackReturn(callback(
 			prototype, privateKey, protectedKey,
 			scopes, staticPrototype));
 
-	staticPrototype = _extendStaticPrototype(staticPrototype, superClasses);
+	staticPrototype = _extendStaticPrototype(
+		staticPrototype, superClasses);
+
+	const [privatePrototype, protectedPrototype] =
+		_extractScopesFromPrototype(
+			prototype, [privateKey, protectedKey]);
 
 	const wrapper = function() {
+		'use strict';
+
 		let self;
 		if (this) {
 			self = this;
@@ -145,13 +173,8 @@ function createClass(className, superClasses, callback) {
 			self = Object.create(prototype);
 		}
 
-		for (const key of [privateKey, protectedKey]) {
-			Object.defineProperty(self, key, {
-				value: Object.create(prototype[key], {
-					[THIS_PROPERTY_NAME]: { value: self }
-				})
-			});
-		}
+		_defineScopesOnContext(self, privateKey, privatePrototype);
+		_defineScopesOnContext(self, protectedKey, protectedPrototype);
 
 		const callCounter = _obj();
 		function callSuperClass(name, ...args) {
