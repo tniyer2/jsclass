@@ -1,5 +1,5 @@
 {
-  "name": "@tniyer/jsclass",
+  "name": "@tniyer2/jsclass",
   "version": "1.0.0",
   "description": "Class system for javascript",
   "main": "class.js",
@@ -11,7 +11,6 @@
     "url": "git+https://github.com/tniyer2/jsclass.git"
   },
   "author": "Tanishq Iyer",
-  "private": true,
   "bugs": {
     "url": "https://github.com/tniyer2/jsclass/issues"
   },
